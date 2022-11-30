@@ -4,22 +4,24 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.setFragmentResult
-import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.hackathon2022.*
+import com.example.hackathon2022.R
+import com.example.hackathon2022.RecyclerAdapter
 import com.example.hackathon2022.databinding.FragmentDashboardBinding
-import com.example.hackathon2022.model.Date
+import com.example.hackathon2022.ui.map.MapViewModel
 
 class DashboardFragment : Fragment(){
 
     private var _binding: FragmentDashboardBinding? = null
-    private val viewModel: SensorViewModel by activityViewModels()
+    private val dashboardViewModel: DashboardViewModel by activityViewModels()
+    private val mapViewModel: MapViewModel by activityViewModels()
 
     // This property is only valid between onCreateView and
     // onDestroyView.
@@ -35,29 +37,27 @@ class DashboardFragment : Fragment(){
         _binding = FragmentDashboardBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        // DBの読み込み
         val recyclerView = binding.RecyclerList
-        val adapter = DateListAdapter()
-        recyclerView.adapter = adapter
-        recyclerView.layoutManager = LinearLayoutManager(context)
-
-        viewModel.allDate.observe(viewLifecycleOwner, Observer {
-            adapter.submitList(it)
+        dashboardViewModel.dateList.observe(viewLifecycleOwner) {
+            val adapter = RecyclerAdapter(it)
             adapter.setOnCellClickListener(
-                object : DateListAdapter.OnCellClickListener {
+                object : RecyclerAdapter.OnCellClickListener {
                     override fun onItemClick(item: String) {
-                        // itemデータを渡す処理
+                        //itemデータを渡す処理
                         setFragmentResult("stringData", bundleOf("itemString" to item))
 
-                        // 画面遷移処理
+                        //画面遷移処理
                         findNavController().navigate(R.id.navigation_map)
                     }
                 }
             )
-        })
 
+            recyclerView.adapter = adapter
+        }
 
-
+        recyclerView.layoutManager = LinearLayoutManager(context)
+        val dividerItemDecoration = DividerItemDecoration(context, LinearLayoutManager(context).orientation)
+        recyclerView.addItemDecoration(dividerItemDecoration)
         return root
     }
 
