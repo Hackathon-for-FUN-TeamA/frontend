@@ -13,6 +13,7 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.example.hackathon2022.AlertDialogFragment
+import com.example.hackathon2022.SensorViewModel
 import com.example.hackathon2022.databinding.FragmentHomeBinding
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.data.Entry
@@ -28,7 +29,7 @@ class HomeFragment : Fragment(){
 
     private var _binding: FragmentHomeBinding? = null
 
-    private val homeViewModel: HomeViewModel by activityViewModels()
+    private val viewModel: SensorViewModel by activityViewModels()
     // This property is only valid between onCreateView and
     // onDestroyView.
     private val binding get() = _binding!!
@@ -75,20 +76,20 @@ class HomeFragment : Fragment(){
 
         /*複数のデータセットを格納するリスト*/
         val dataSets = ArrayList<ILineDataSet>()
-        homeViewModel.acceleration.observe(viewLifecycleOwner) {
+        viewModel.acceleration.observe(viewLifecycleOwner) {
             addCount++
             textX.text = it[0].toString()
             textY.text = it[1].toString()
             textZ.text = it[2].toString()
             val magnitudeOfAcceleration = sqrt(it[0].pow(2)+it[1].pow(2)+it[2].pow(2))
             if (magnitudeOfAcceleration < 4) {
-                homeViewModel.putBackgroundColor(Color.WHITE)
+                viewModel.putBackgroundColor(Color.WHITE)
             } else if (magnitudeOfAcceleration < 7.9) {
-                homeViewModel.putBackgroundColor(Color.YELLOW)
+                viewModel.putBackgroundColor(Color.YELLOW)
             } else {
                 val dialog = AlertDialogFragment()
                 dialog.show(childFragmentManager, "sample")
-                homeViewModel.putBackgroundColor(Color.RED)
+                viewModel.putBackgroundColor(Color.RED)
             }
 
             // alpha is calculated as t / (t + dT)
@@ -162,13 +163,13 @@ class HomeFragment : Fragment(){
             mChart.moveViewToX(addCount.toFloat()) // 最新のデータまで表示を移動させる
         }
 
-        homeViewModel.backgroundColor.observe(viewLifecycleOwner) {
+        viewModel.backgroundColor.observe(viewLifecycleOwner) {
             binding.root.setBackgroundColor(it)
         }
 
         val textSpeed: TextView = binding.textSpeed
 
-        homeViewModel.speed.observe(viewLifecycleOwner) {
+        viewModel.speed.observe(viewLifecycleOwner) {
             /*このスコープ内のitがスピードを表している*/
             textSpeed.text = it.toString()
         }

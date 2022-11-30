@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.Color
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -14,25 +13,23 @@ import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
-import android.provider.Settings.Global
 import android.util.Log
 import android.view.View
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.app.ActivityCompat
+import androidx.lifecycle.Observer
 import androidx.navigation.NavDestination
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
-import androidx.room.Room
+import androidx.recyclerview.widget.RecyclerView
 import com.example.hackathon2022.databinding.ActivityMainBinding
 import com.example.hackathon2022.model.Date
 import com.example.hackathon2022.model.DateRoomDatabase
-import com.example.hackathon2022.ui.dashboard.DashboardViewModel
-import com.example.hackathon2022.ui.home.HomeViewModel
-import com.example.hackathon2022.ui.map.MapViewModel
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.coroutines.*
 import java.net.URL
@@ -49,9 +46,9 @@ class MainActivity : AppCompatActivity(), SensorEventListener, LocationListener 
     private lateinit var locationManager: LocationManager
     private var speed = 0f
 
-    private val homeViewModel: HomeViewModel by viewModels()
-    private val dashboardViewModel: DashboardViewModel by viewModels()
-    private val mapViewModel: MapViewModel by viewModels()
+    private val sensorViewModel: SensorViewModel by viewModels {
+        SensorViewModelFactory((application as DateApplication).repository)
+    }
 
     private lateinit var binding: ActivityMainBinding
 
@@ -64,6 +61,17 @@ class MainActivity : AppCompatActivity(), SensorEventListener, LocationListener 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        //ダークモードかどうかを取得する
+        val sharedPref = getSharedPreferences("Dark", Context.MODE_PRIVATE)
+
+        val isDark = sharedPref.getString("isDark", "False")
+
+        if (isDark == "True") {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        }
+
         //センサーマネージャーを取得する
         mManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         //加速度計のセンサーを取得する
@@ -73,9 +81,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener, LocationListener 
         //ロケーションマネージャーに端末のロケーションサービスを関連づける
         locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
-        loadDate()
-
-
         //非同期処理
         coroutineScope.launch {
             val originalDeferred = coroutineScope.async(Dispatchers.IO) {
@@ -83,8 +88,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener, LocationListener 
             }
 
             val originalBitmap = originalDeferred.await()
-            dashboardViewModel.putMap(originalBitmap)
-            mapViewModel.putMap(originalBitmap)
+            sensorViewModel.putMap(originalBitmap)
         }
 
         val navView: BottomNavigationView = binding.navView
@@ -122,13 +126,13 @@ class MainActivity : AppCompatActivity(), SensorEventListener, LocationListener 
         //Z軸方法
         Log.v("sensorTest", event.values!![2].toString())
 
-        homeViewModel.putAcceleration(event.values!!)
+        sensorViewModel.putAcceleration(event.values!!)
 
         val magnitudeOfAcceleration = sqrt(event.values[0].pow(2)+event.values[1].pow(2)+event.values[2].pow(2))
         if (magnitudeOfAcceleration >= 7.9) {
             val dateNow = LocalDate.now().toString()+ "-" + LocalTime.now().toString()
-            saveData(dateNow)
-            loadDate()
+            val date = Date(0, dateNow)
+            sensorViewModel.insert(date)
         }
 
     }
@@ -161,7 +165,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener, LocationListener 
         } else {
             0f
         }
-        homeViewModel.putSpeed(speed)
+        sensorViewModel.putSpeed(speed)
         Log.d("speedTest", speed.toString())
     }
 
@@ -169,36 +173,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener, LocationListener 
         URL(URL).openStream().use {
             BitmapFactory.decodeStream(it)
         }
-
-    private fun saveData(dateNow: String) {
-        val dateDB = DateRoomDatabase.getInstance(this)
-        val dateDao = dateDB.dateDao()
-        GlobalScope.launch {
-            withContext(Dispatchers.IO) {
-                val number = dashboardViewModel.dataListSize
-                val date = Date(number, dateNow)
-                dateDao.insert(date)
-            }
-        }
-    }
-
-    private fun loadDate() {
-        val dateDB = DateRoomDatabase.getInstance(this)
-        val dateDao = dateDB.dateDao()
-        val stringList = mutableListOf<String>()
-        GlobalScope.launch {
-            withContext(Dispatchers.IO) {
-                val dateList = dateDao.getAll()
-                for (date in dateList) {
-                    date.date?.let { stringList.add(it) }
-                }
-
-                Log.v("RoomTest", dateList.toString())
-            }
-        }
-        dashboardViewModel.putDateList(stringList)
-        dashboardViewModel.dataListSize = stringList.size
-    }
 }
 
 

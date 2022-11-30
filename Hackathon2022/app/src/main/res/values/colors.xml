@@ -12,4 +12,15 @@
 <!--テーマの色-->
     <color name="green01">#5BACA4</color>
     <color name="green02">#41928A</color>
+<!--ダークモード関連-->
+    <color name="colorPrimary">#212121</color>
+    <color name="colorPrimaryDark">#212121</color>
+    <color name="colorAccent">#80cbc4</color>
+    <color name="colorTransparent">#00000000</color>
+    <color name="textColor">#FFFFFF</color>
+    <color name="textColorPrimary">#FFFFFF</color>
+    <color name="textColorSecondary">#808080</color>
+    <color name="colorBackground">#313131</color>
+    <color name="colorCardBackground">@color/colorPrimary</color>
+    <color name="colorBackgroundBottomAppBar">#353535</color>
 </resources>
