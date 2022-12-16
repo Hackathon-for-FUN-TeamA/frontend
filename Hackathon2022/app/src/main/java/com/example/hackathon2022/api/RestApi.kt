@@ -17,7 +17,7 @@ interface RestApi {
     suspend fun postLogin(@Body postLogin: LoginData): Response<ResponseGetUser>
 
     @POST("/drivelog")
-    suspend fun postDriveLog(@Body postDriveLog: DriveLogData)
+    suspend fun postDriveLog(@Body postDriveLog: DriveLogData): Response<ResponseDriveLog>
 
     @GET("/drivelog")
     suspend fun getDriveLog(@Query("token") token: String, @Query("date") date: String): Response<ResponseDriveLog>

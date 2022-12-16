@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.Color
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -14,7 +13,6 @@ import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
-import android.provider.Settings.Global
 import android.util.Log
 import android.view.View
 import androidx.activity.viewModels
@@ -26,12 +24,12 @@ import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
-import androidx.room.Room
 import com.example.hackathon2022.databinding.ActivityMainBinding
 import com.example.hackathon2022.model.Date
 import com.example.hackathon2022.model.DateRoomDatabase
 import com.example.hackathon2022.ui.dashboard.DashboardViewModel
 import com.example.hackathon2022.ui.home.HomeViewModel
+import com.example.hackathon2022.ui.login.LoginViewModel
 import com.example.hackathon2022.ui.map.MapViewModel
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.coroutines.*
@@ -52,6 +50,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener, LocationListener 
     private val homeViewModel: HomeViewModel by viewModels()
     private val dashboardViewModel: DashboardViewModel by viewModels()
     private val mapViewModel: MapViewModel by viewModels()
+    private val loginViewModel: LoginViewModel by viewModels()
 
     private lateinit var binding: ActivityMainBinding
 
@@ -127,6 +126,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener, LocationListener 
         val magnitudeOfAcceleration = sqrt(event.values[0].pow(2)+event.values[1].pow(2)+event.values[2].pow(2))
         if (magnitudeOfAcceleration >= 7.9) {
             val dateNow = LocalDate.now().toString()+ "-" + LocalTime.now().toString()
+//            dashboardViewModel.postDriveLog(loginViewModel.token.toString(), dateNow, speed, magnitudeOfAcceleration, homeViewModel.latitude.value!!.toFloat(), homeViewModel.longitude.value!!.toFloat())
             saveData(dateNow)
             loadDate()
         }
@@ -162,6 +162,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener, LocationListener 
             0f
         }
         homeViewModel.putSpeed(speed)
+        homeViewModel.putLocation(location.latitude, location.longitude)
         Log.d("speedTest", speed.toString())
     }
 

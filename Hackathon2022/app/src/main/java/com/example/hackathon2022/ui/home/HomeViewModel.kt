@@ -31,4 +31,14 @@ class HomeViewModel : ViewModel() {
     fun putSpeed(p0: Float) {
         _speed.value = p0
     }
+
+    private val _latitude = MutableLiveData<Double>()
+    val latitude: LiveData<Double> = _latitude
+    private val _longitude = MutableLiveData<Double>()
+    val longitude: LiveData<Double> = _longitude
+
+    fun putLocation(lat: Double, lon: Double) {
+        _latitude.value = lat
+        _longitude.value = lon
+    }
 }

@@ -1,16 +1,16 @@
 package com.example.hackathon2022.ui.login
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
-import com.example.hackathon2022.MainActivity
 import com.example.hackathon2022.R
 import com.example.hackathon2022.databinding.FragmentLoginBinding
-import com.example.hackathon2022.ui.login.LoginViewModel
 
 class LoginFragment: Fragment() {
 
@@ -31,6 +31,9 @@ class LoginFragment: Fragment() {
         _binding = FragmentLoginBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
+        val editUsername: EditText = binding.editUsername
+        val editPassword: EditText = binding.editPass
+
         binding.apply {
             btLogin.setOnClickListener{
 //                findNavController().navigate(R.id.navigation_home)
@@ -41,9 +44,23 @@ class LoginFragment: Fragment() {
                 findNavController().navigate(R.id.navigation_signup)
             }
             btLoginSelect.setOnClickListener{
-                findNavController().navigate(R.id.navigation_home)
+                loginViewModel.login(editUsername.text.toString(), editPassword.text.toString())
+                if (loginViewModel.loginResponse.value != null) {
+                    findNavController().navigate(R.id.navigation_home)
+                }
             }
         }
+
+        loginViewModel.loginResponse.observe(viewLifecycleOwner) {
+            binding.apply {
+                it.body()?.let { it1 -> loginViewModel.putToken(it1.token) }
+            }
+        }
+
+        loginViewModel.token.observe(viewLifecycleOwner) {
+            Log.d("token", it)
+        }
+
 
         return root
     }

@@ -4,7 +4,7 @@ import com.squareup.moshi.Json
 
 class ResponseData {
     data class ResponseGetUser(
-        @Json(name = "token") val taken: String
+        @Json(name = "token") val token: String
     )
 
     data class ResponseDriveLog(

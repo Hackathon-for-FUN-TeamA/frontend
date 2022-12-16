@@ -43,8 +43,8 @@ class SignupFragment : Fragment() {
                 findNavController().navigate(R.id.navigation_login)
             }
             btSignupSelect.setOnClickListener {
+                signupViewModel.registerUser(editUsername.text.toString(), editPassword.text.toString())
                 findNavController().navigate(R.id.navigation_home)
-//                signupViewModel.registerUser(editUsername.text.toString(), editPassword.text.toString())
             }
         }
 
